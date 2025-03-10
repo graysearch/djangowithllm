@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Sports App{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Optional: Link to your custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <style>
+        /* Log container styles */
+        #logContainer {
+            height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            font-family: monospace;
+            font-size: 0.9rem;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .log-entry {
+            margin: 0;
+            padding: 2px 0;
+        }
+
+        .log-section {
+            margin-top: 30px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .log-header {
+            cursor: pointer;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-content {
+            padding: 15px;
+        }
+
+        .collapsed .log-content {
+            display: none;
+        }
+
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .auto-refresh-toggle label {
+            margin-left: 5px;
+            margin-bottom: 0;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">Sports App</a>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        {% block content %}
+        <!-- Page-specific content will be injected here -->
+        {% endblock %}
+
+        <!-- Collapsible Log Section -->
+        <div class="log-section collapsed" id="logSection">
+            <div class="log-header" id="logToggle">
+                <h5 class="mb-0">Log Stream <small id="logStatus" class="text-muted">[Click to show]</small></h5>
+                <div class="d-flex align-items-center">
+                    <div class="auto-refresh-toggle">
+                        <input type="checkbox" class="form-check-input" id="autoRefreshToggle" checked>
+                        <label class="form-check-label" for="autoRefreshToggle">Auto-refresh</label>
+                    </div>
+                    <button id="refreshLogBtn" class="btn btn-sm btn-outline-secondary">Refresh</button>
+                    <button id="clearLogBtn" class="btn btn-sm btn-outline-danger ms-2">Clear</button>
+                </div>
+            </div>
+            <div class="log-content">
+                <div id="logContainer">Loading logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Log section JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const logSection = document.getElementById('logSection');
+            const logContainer = document.getElementById('logContainer');
+            const logToggle = document.getElementById('logToggle');
+            const logStatus = document.getElementById('logStatus');
+            const refreshLogBtn = document.getElementById('refreshLogBtn');
+            const clearLogBtn = document.getElementById('clearLogBtn');
+            const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+
+            let refreshInterval = null;
+            let logLines = new Set(); // Store unique log lines
+
+            // Toggle log visibility
+            logToggle.addEventListener('click', function () {
+                logSection.classList.toggle('collapsed');
+
+                if (logSection.classList.contains('collapsed')) {
+                    logStatus.textContent = '[Click to show]';
+                    // Stop auto-refresh when collapsed
+                    stopAutoRefresh();
+                } else {
+                    logStatus.textContent = '[Click to hide]';
+                    // Clear the log container and set when expanding
+                    logContainer.innerHTML = '';
+                    logLines.clear();
+                    fetchLogs(); // Get fresh logs
+
+                    // Start auto-refresh if enabled
+                    if (autoRefreshToggle.checked) {
+                        startAutoRefresh();
+                    }
+                }
+            });
+
+            // Function to fetch logs
+            function fetchLogs() {
+                fetch('http://127.0.0.1:8001/logfile.log')
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data && data.trim()) {
+                            const lines = data.split('\n');
+                            let hasNewLines = false;
+
+                            // Process each line
+                            lines.forEach(line => {
+                                if (line.trim() && !logLines.has(line)) {
+                                    logLines.add(line);
+                                    hasNewLines = true;
+
+                                    const logLine = document.createElement('div');
+                                    logLine.textContent = line;
+                                    logContainer.appendChild(logLine);
+                                }
+                            });
+
+                            // Only scroll if we added new content
+                            if (hasNewLines) {
+                                logContainer.scrollTop = logContainer.scrollHeight;
+                            }
+                        } else if (logContainer.children.length === 0) {
+                            logContainer.textContent = 'No log entries found.';
+                        }
+                    })
+                    .catch(error => {
+                        logContainer.textContent = 'Error loading logs: ' + error.message;
+                        console.error('Error fetching logs:', error);
+                    });
+            }
+
+            // Start auto-refresh
+            function startAutoRefresh() {
+                // Clear any existing interval first
+                stopAutoRefresh();
+
+                // Set new interval to refresh every 1 second
+                refreshInterval = setInterval(fetchLogs, 1000);
+            }
+
+            // Stop auto-refresh
+            function stopAutoRefresh() {
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                    refreshInterval = null;
+                }
+            }
+
+            // Auto-refresh toggle
+            autoRefreshToggle.addEventListener('change', function (e) {
+                e.stopPropagation(); // Prevent toggling when clicking the checkbox
+
+                if (this.checked && !logSection.classList.contains('collapsed')) {
+                    startAutoRefresh();
+                } else {
+                    stopAutoRefresh();
+                }
+            });
+
+            // Manual refresh button
+            refreshLogBtn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent toggling when clicking the button
+                fetchLogs();
+            });
+
+            // Clear button
+            clearLogBtn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent toggling when clicking the button
+                logContainer.innerHTML = '<div class="text-muted">Log display cleared. Click Refresh to see logs again.</div>';
+                logLines.clear(); // Reset the tracked lines
+            });
+        });
+    </script>
+</body>
+
+</html>
