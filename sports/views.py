@@ -87,19 +87,3 @@ def page4(request):
     if not gpt_response:
         return redirect("page3")
     return render(request, "sports/page4.html", {"gpt_response": gpt_response})
-
-
-
-def proxy_logs(request):
-    """
-    Proxy view to fetch logs from FastAPI and serve them through Django
-    """
-    try:
-        # Fetch logs from FastAPI
-        response = requests.get("http://127.0.0.1:8001/logfile.log")
-        response.raise_for_status()  # Raise exception for 4XX/5XX responses
-        
-        # Return the content as plain text
-        return HttpResponse(response.text, content_type="text/plain")
-    except Exception as e:
-        return HttpResponse(f"Error fetching logs: {str(e)}", content_type="text/plain", status=500)

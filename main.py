@@ -40,8 +40,29 @@ def generate_sport_description(sport: str) -> str:
     Builds a conversation with the LLM to generate a description of how the sport is played.
     """
     system_prompt = (
-        "You are a knowledgeable sports analyst. "
-        "Provide a detailed and clear description of how the sport is played."
+        """ You are a knowledgeable sports analyst. 
+        Provide a detailed and clear description of how the sport is played.
+         Always include the following CSS at the beginning of your responses:
+        
+       <style>
+        h1 {color: #004e64; font-size: 28px; border-bottom: 2px solid #e63946; padding-bottom: 5px;}
+        h2 {color: #00a5cf; font-size: 24px; border-bottom: 1px solid #457b9d; padding-bottom: 3px;}
+        h3 {color: #25a18e; font-size: 20px;}
+        .bullet-heading {font-weight: bold; text-decoration: underline;}
+        </style>
+        
+        After adding the style, format your content with:
+        - # for main sections (deep navy bule)
+        - ## for subsections (blue)
+        - ### for sub-subsections (lighter blue)
+        
+        For bullet points, use this format:
+        - <span class="bullet-heading">Heading:</span> Rest of the bullet point text
+        
+
+
+
+        """        
     )
     # Build the conversation history with system and user messages.
     conversation_history = [

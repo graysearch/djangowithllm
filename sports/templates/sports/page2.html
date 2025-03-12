@@ -4,14 +4,69 @@
 {% block title %}Sport Info{% endblock %}
 
 {% block content %}
+<style>
+    /* Custom style for accordion buttons */
+    .accordion-button.bg-primary {
+        background-color: #62b6cb !important;
+        /* Replace with your exact color code */
+    }
+
+    /* Make sure the color stays when active/expanded */
+    .accordion-button:not(.collapsed).bg-primary {
+        background-color: #62b6cb !important;
+        color: white !important;
+    }
+</style>
 <div class="card mx-auto" style="max-width: 600px;">
     <div class="card-body">
         <h1 class="card-title text-center mb-4">Sport Information</h1>
         <h2 class="text-center">{{ sport|title }}</h2>
+
         <!-- Render sport_info with markdown conversion -->
         <div class="markdown-body">
             {{ sport_info|markdownify|safe }}
         </div>
+
+        <!-- First Accordion Section -->
+        <div class="accordion mt-4" id="infoAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="additionalInfoHeading">
+                    <button class="accordion-button collapsed bg-primary text-white" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#additionalInfoCollapse" aria-expanded="false"
+                        aria-controls="additionalInfoCollapse">
+                        Additional Information
+                    </button>
+                </h2>
+                <div id="additionalInfoCollapse" class="accordion-collapse collapse"
+                    aria-labelledby="additionalInfoHeading" data-bs-parent="#infoAccordion">
+                    <div class="accordion-body">
+                        <div class="markdown-body">
+                            {{ additional_info|markdownify|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Accordion Section -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="historyHeading">
+                    <button class="accordion-button collapsed bg-primary text-white" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#historyCollapse" aria-expanded="false"
+                        aria-controls="historyCollapse">
+                        Sport History
+                    </button>
+                </h2>
+                <div id="historyCollapse" class="accordion-collapse collapse" aria-labelledby="historyHeading"
+                    data-bs-parent="#infoAccordion">
+                    <div class="accordion-body">
+                        <div class="markdown-body">
+                            {{ sport_history|markdownify|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between mt-3">
             <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
             <a href="{% url 'page3' %}" class="btn btn-primary">Next</a>
