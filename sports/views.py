@@ -34,14 +34,39 @@ def home(request):
 
 def page2(request):
     """
-    Page 2: Display the sport description.
+    Page 2: Display the sport description and additional information in accordions.
     Provides links to go back to home or proceed to page3.
     """
     sport = request.session.get("selected_sport")
     sport_info = request.session.get("sport_info")
+    
     if not sport or not sport_info:
         return redirect("home")
-    return render(request, "sports/page2.html", {"sport": sport, "sport_info": sport_info})
+    
+    # Get additional information for the accordions
+    additional_info = None
+    sport_history = None
+    
+    # Try to fetch additional info from FastAPI
+    try:
+        additional_response = requests.get(f"{FASTAPI_BASE_URL}/additional-info", params={"sport": sport})
+        if additional_response.status_code == 200:
+            additional_info = additional_response.json().get("content")
+            
+        history_response = requests.get(f"{FASTAPI_BASE_URL}/sport-history", params={"sport": sport})
+        if history_response.status_code == 200:
+            sport_history = history_response.json().get("content")
+            
+    except Exception as e:
+        # If API calls fail, provide default content
+        print(f"Error fetching accordion content: {e}")
+    
+    return render(request, "sports/page2.html", {
+        "sport": sport, 
+        "sport_info": sport_info,
+        "additional_info": additional_info,
+        "sport_history": sport_history
+    })
 
 
 def page3(request):

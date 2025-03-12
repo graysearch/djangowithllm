@@ -58,6 +58,10 @@ def generate_sport_description(sport: str) -> str:
         
         For bullet points, use this format:
         - <span class="bullet-heading">Heading:</span> Rest of the bullet point text
+        
+
+
+
         """        
     )
     # Build the conversation history with system and user messages.
@@ -68,45 +72,6 @@ def generate_sport_description(sport: str) -> str:
     # Call the LLM and return its response.
     description = get_openai_response(conversation_history)
     return description
-
-# --- Function to Generate Additional Information about a Sport ---
-def generate_additional_info(sport: str) -> str:
-    """
-    Builds a conversation with the LLM to generate additional information about the sport.
-    """
-    system_prompt = (
-        """ You are a knowledgeable sports analyst. 
-        Provide additional rare information about the sport such as who is best player, which country win most matches, average salary
-        """        
-    )
-    # Build the conversation history with system and user messages.
-    conversation_history = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Provide additional information about {sport}, including rules, equipment requirements, and key terminology."}
-    ]
-    # Call the LLM and return its response.
-    additional_info = get_openai_response(conversation_history)
-    return additional_info
-
-# --- Function to Generate Sport History ---
-def generate_sport_history(sport: str) -> str:
-    """
-    Builds a conversation with the LLM to generate the history of the sport.
-    """
-    system_prompt = (
-        """ You are a sports historian with deep knowledge about the origins and evolution of sports.
-        Provide a concise history of the specified sport, including its origins, major developments,
-        and how it evolved over time. Format your response in markdown.
-        """        
-    )
-    # Build the conversation history with system and user messages.
-    conversation_history = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Provide a concise history of {sport}, including its origins and how it evolved over time."}
-    ]
-    # Call the LLM and return its response.
-    history = get_openai_response(conversation_history)
-    return history
 
 @app.get("/sport-info")
 def get_sport_info(sport: str):
@@ -124,40 +89,6 @@ def get_sport_info(sport: str):
     # Generate sport description via LLM
     description = generate_sport_description(sport_lower)
     return {"sport": sport_lower, "description": description}
-
-@app.get("/additional-info")
-def get_additional_info(sport: str):
-    """
-    Endpoint to get additional information about a sport.
-    It calls the LLM to generate the additional information.
-    Acceptable sports: soccer, cricket, basketball.
-    """
-    sport_lower = sport.lower()
-    if sport_lower not in ["soccer", "cricket", "basketball"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Sport not found. Please choose from soccer, cricket, or basketball."
-        )
-    # Generate additional information via LLM
-    content = generate_additional_info(sport_lower)
-    return {"sport": sport_lower, "content": content}
-
-@app.get("/sport-history")
-def get_sport_history(sport: str):
-    """
-    Endpoint to get the history of a sport.
-    It calls the LLM to generate the history.
-    Acceptable sports: soccer, cricket, basketball.
-    """
-    sport_lower = sport.lower()
-    if sport_lower not in ["soccer", "cricket", "basketball"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Sport not found. Please choose from soccer, cricket, or basketball."
-        )
-    # Generate sport history via LLM
-    content = generate_sport_history(sport_lower)
-    return {"sport": sport_lower, "content": content}
 
 # --- Data Model for GPT Query Request ---
 class GPTQuery(BaseModel):
