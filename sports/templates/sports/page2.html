@@ -17,6 +17,7 @@
         color: white !important;
     }
 </style>
+
 <div class="card mx-auto" style="max-width: 600px;">
     <div class="card-body">
         <h1 class="card-title text-center mb-4">Sport Information</h1>
@@ -27,8 +28,19 @@
             {{ sport_info|markdownify|safe }}
         </div>
 
-        <!-- First Accordion Section -->
-        <div class="accordion mt-4" id="infoAccordion">
+        <div class="d-flex justify-content-between mt-3">
+            <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
+            <a href="{% url 'page3' %}" class="btn btn-primary">Next</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block accordion_section %}
+<div class="card mx-auto mt-4" style="max-width: 600px;">
+    <div class="card-body">
+        <div class="accordion" id="infoAccordion">
+            <!-- First Accordion Section -->
             <div class="accordion-item">
                 <h2 class="accordion-header" id="additionalInfoHeading">
                     <button class="accordion-button collapsed bg-primary text-white" type="button"
@@ -41,7 +53,16 @@
                     aria-labelledby="additionalInfoHeading" data-bs-parent="#infoAccordion">
                     <div class="accordion-body">
                         <div class="markdown-body">
+                            {% if additional_info %}
                             {{ additional_info|markdownify|safe }}
+                            {% else %}
+                            <p>Additional rules and guidelines for playing {{ sport }}.</p>
+                            <ul>
+                                <li>Standard regulations</li>
+                                <li>Equipment requirements</li>
+                                <li>Scoring system</li>
+                            </ul>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -60,16 +81,22 @@
                     data-bs-parent="#infoAccordion">
                     <div class="accordion-body">
                         <div class="markdown-body">
+                            {% if sport_history %}
                             {{ sport_history|markdownify|safe }}
+                            {% else %}
+                            <h4>History of {{ sport|title }}</h4>
+                            <p>The history of {{ sport }} dates back several decades.</p>
+                            <p>Key milestones:</p>
+                            <ul>
+                                <li>Origin and early development</li>
+                                <li>Evolution of rules and playing style</li>
+                                <li>Major competitions and achievements</li>
+                            </ul>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex justify-content-between mt-3">
-            <a href="{% url 'home' %}" class="btn btn-secondary">Back to Home</a>
-            <a href="{% url 'page3' %}" class="btn btn-primary">Next</a>
         </div>
     </div>
 </div>
